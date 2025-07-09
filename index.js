@@ -11,14 +11,17 @@ const fs = require('fs');
   const page = await browser.newPage();
   await page.goto('https://www.haxball.com/headless', { waitUntil: 'networkidle2' });
 
-  // Chờ Haxball load HBInit
   await page.waitForFunction(() => typeof HBInit !== 'undefined');
   console.log("✅ Haxball Headless đã load.");
 
-  // Load script RS.js + ép return room link
   const script = fs.readFileSync('./RS.js', 'utf8');
-  const roomLink = await page.evaluate(script => {
+  const roomLink = await page.evaluate(async (script) => {
     eval(script);
+    console.log("✅ Script injected, waiting for room...");
+
+    while (typeof room === 'undefined' || typeof room.roomLink === 'undefined') {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     return room.roomLink;
   }, script);
 
