@@ -11,22 +11,23 @@ const fs = require('fs');
   const page = await browser.newPage();
   await page.goto('https://www.haxball.com/headless', { waitUntil: 'networkidle2' });
 
-  // Đợi HBInit sẵn sàng
+  // Chờ Haxball load xong HBInit
   await page.waitForFunction(() => typeof HBInit !== 'undefined');
-  console.log("✅ Haxball Headless đã load xong.");
+  console.log("✅ Haxball Headless đã load.");
 
-  // Đọc script RS.js
+  // Load script RS.js
   const script = fs.readFileSync('./RS.js', 'utf8');
-
-  // Inject script
   await page.evaluate(script => {
     eval(script);
-    console.log("✅ Đã load script RS.js vào room.");
   }, script);
+  console.log("✅ Đã inject RS.js vào room.");
 
-  // Lấy room link
+  // Chờ room được tạo xong
+  await page.waitForFunction(() => typeof room !== 'undefined' && room.roomLink !== undefined);
+  console.log("✅ Room đã được tạo.");
+
+  // Lấy link room
   const roomLinkHandle = await page.evaluateHandle(() => room.roomLink);
   const roomLink = await roomLinkHandle.jsonValue();
   console.log("🎯 ROOM LINK:", roomLink);
-
-})(); 
+})();
